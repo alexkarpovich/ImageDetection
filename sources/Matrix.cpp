@@ -1,114 +1,245 @@
 #include "../headers/Matrix.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <iomanip>
+#include <cassert>
 
-#include <stdio.h>;
-#include <conio.h>;
-#include <string.h>;
-#include <stdlib.h>;
-
-const int max=20;
-int i , j , n , k , size=0 , row , column ;
-float num , det=0 , inverse_matrix[max][max] , matrix[max][max] , new_mat[max][max] , m_minor[max][max] , m_Transpose[max][max];
-
-float determinant(float matrix[max][max]);
-float minor(float matrix[max][max],int k);
-float Transpose(float matrix[max][max]);
-
-int main()
-{
-      printf("\n What is degree of your matrix?");
-      scanf("%d",&n);
-      printf("\n Please entre your matrix's rooms:");
-
-      for(i=1;i<=n;i++)
-      {
-         for(j=1;j<=n;j++)
-         {
-             printf("\n\t[ %d , %d ] = ",i,j);
-             scanf("%d",&matrix[i][j]);
-         }
-         printf("\n");
-      }
-      size=n;
-      det=determinant(matrix);
-
-      if(det==0)
-      {
-          printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * *\n\tINVERSE DOESN'T EXSIT");
-          getch();
-          return 0;
-      }
-      else
-      {
-          num=1/det;
-          m_Transpose[n][n]=Transpose(matrix);
-          printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * *\n\tMATRIX REVERSE IS:\n\n\t");
-          /*complex of determinant with Transpose*/
-          for(i=1;i<=n;i++)
-          {
-               for(j=1;j<=n;j++)
-               {
-                    inverse_matrix[i][j]=num*m_Transpose[i][j];
-                    if(inverse_matrix[i][j]&gt;=0)
-                        printf("     %d",inverse_matrix[i][j]);
-                    else
-                        printf("     %d",inverse_matrix[i][j]);
-               }
-               printf("\n\t");
-          }
-      }
-
-
-      getch();
-      return 0;
-}
-
-/* calculate determinate of matrix */
-float determinant(float matrix[][max])
-{
-      if(n==1)
-             return matrix[1][1];
-      else if(n==2)
-           return (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]);
-      else
-      {
-          for(k=1;k<=n;k++)
-          {
-              det+=((-1)^(1+k))*matrix[1][k]*determinant(minor(matrix,k)); //error
-              n=size;
-          }
-          return det;
-      }
-}
-
-/*calculate minor of matrix and return to determinant's function*/
-float minor(float matrix[][max],int k)
-{
-      int m=1 , p , r , c , row=1 , column;
-      column=k;
-      for(r=2;r<=n;r++)
-      {
-          p=1;
-          for(c=1;c<=n;c++)
-          {
-              if(r!=row &amp;&amp; c!=column)
-              {
-                  new_mat[m][p]=matrix[r][c];
-                  p++;
-              }
-          }
-          if(r!=row)
-             m++;
-      }
-      n--;
-      return new_mat[m][p];
+Matrix::Matrix() {
 
 }
 
-/*calculate Transpose*/
-float Transpose(float matrix[][max])
-{
-    for(int i=1;i<=n;i++)
-       for(j=1;j<=n;j++)
-          m_Transpose[i][j]=matrix[j][i];
-    return m_Transpose[n][n];
+Matrix::Matrix(int m, int n) {
+	this->m = m;
+	this->n = n;
+	this->matrix = new double*[m];
+	for (int i = 0; i < m; i++) {
+		this->matrix[i] = new double[n];
+	}
+}
+
+Matrix::Matrix(double ** matrix, int m, int n) {
+	this->matrix = new double*[m];
+	for (int i = 0; i < m; i++) {
+		this->matrix[i] = new double[n];
+	}
+
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			this->matrix[i][j] = matrix[i][j];
+		}
+	}
+
+	this->n = n;
+	this->m = m;
+}
+
+Matrix::~Matrix() {
+	for (int i = 0; i < m; i++) {
+		delete[] matrix[i];
+	}
+	delete[] matrix;
+}
+Matrix::Matrix(const Matrix& Matrix) {
+	m = Matrix.m;
+	n = Matrix.n;
+	matrix = new double*[m];
+	for (int i = 0; i < m; i++) {
+		matrix[i] = new double[n];
+	}
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			matrix[i][j] = Matrix.matrix[i][j];
+		}
+	}
+}
+
+double ** Matrix::getMatrix() {
+	return this->matrix;
+}
+
+Matrix Matrix::operator=(const Matrix& B) {
+	m = B.m;
+	n = B.n;
+	matrix = new double*[m];
+	for (int i = 0; i < m; i++) {
+		matrix[i] = new double[n];
+	}
+
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			matrix[i][j] = B.matrix[i][j];
+		}
+	}
+
+	return *this;
+}
+
+Matrix Matrix::operator +(const Matrix & B) {
+
+	if (!(m == B.m && n == B.n))
+		exit(0);
+
+	Matrix C(m, n);
+
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < n; j++) {
+			C.matrix[i][j] = matrix[i][j] + B.matrix[i][j];
+		}
+
+	return *(new Matrix(C));
+}
+
+Matrix Matrix::operator-(const Matrix& B) {
+	if (!(m == B.m && n == B.n)) {
+		exit(0);
+	}
+
+	Matrix C(m, n);
+
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			C.matrix[i][j] = matrix[i][j] - B.matrix[i][j];
+		}
+	}
+
+	return *(new Matrix(C));
+}
+
+Matrix Matrix::operator*(const Matrix& B) {
+	if (n != B.m)
+		exit(0);
+
+	Matrix C(m, B.n);
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < B.n; j++) {
+			C.matrix[i][j] = 0;
+		}
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < B.n; j++) {
+			for (int k = 0; k < n; k++) {
+				C.matrix[i][j] += (matrix[i][k]) * (B.matrix[k][j]);
+			}
+		}
+
+	return *(new Matrix(C));
+}
+
+double Matrix::det() {
+	if (m != n) {
+		exit(1);
+	}
+
+	return _det(matrix, m);
+}
+
+double Matrix::norm() {
+	if (m == n && m == 1) {
+		return matrix[0][0];
+	}
+
+	double sum = 0, max = 0;
+
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			sum += matrix[i][j];
+		}
+		if (!i) {
+			max = sum;
+			sum = 0;
+		} else {
+			if (max < sum)
+				max = sum;
+			sum = 0;
+		}
+	}
+
+	return max;
+}
+
+double Matrix::_det(double **A, int N) {
+	int i, j;
+	double **M;
+	double D = 0;
+
+	if (N == 2) {
+		D = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+	} else {
+		M = new double*[N - 1];
+
+		for (i = 0; i < N; i++) {
+			for (j = 0; j < N - 1; j++) {
+				if (j < i) {
+					M[j] = A[j];
+				} else {
+					M[j] = A[j + 1];
+				}
+			}
+			D += pow(-1, (double) (i + j)) * _det(M, N - 1) * A[i][N - 1];
+		}
+		delete M;
+	}
+
+	return D;
+
+}
+Matrix& Matrix::invert() {
+	Matrix M(this->matrix, m, n);
+
+	double ** T = new double*[M.m];
+	for (int i = 0; i < m; i++)
+		T[i] = new double[M.m];
+
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < m; j++)
+			T[i][j] = (i == j ? 1 : 0);
+
+	for (int i = 0; i < m; i++) {
+		double tmp = M.matrix[i][i];
+		for (int j = m - 1; j >= 0; j--) {
+			T[i][j] /= tmp;
+			M.matrix[i][j] /= tmp;
+		}
+		for (int j = 0; j < m; j++)
+			if (j != i) {
+				tmp = M.matrix[j][i];
+				for (int k = m - 1; k >= 0; k--) {
+					T[j][k] -= T[i][k] * tmp;
+					M.matrix[j][k] -= M.matrix[i][k] * tmp;
+				}
+			}
+	}
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < m; j++)
+			M.matrix[i][j] = T[i][j];
+
+	return *(new Matrix(M));
+}
+
+Matrix& Matrix::transpose() {
+	Matrix T(n, m);
+
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			T.setValue(j, i, matrix[i][j]);
+		}
+	}
+
+	return *(new Matrix(T));
+}
+
+double Matrix::getValue(int i, int j) const {
+	return matrix[i][j];
+}
+
+void Matrix::setValue(int i, int j, double value) {
+	matrix[i][j] = value;
+}
+
+int Matrix::getRowCount() {
+	return m;
+}
+
+int Matrix::getColCount() {
+	return n;
 }

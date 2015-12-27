@@ -1,17 +1,42 @@
-/*
- * Matrix.h
- *
- *  Created on: Dec 24, 2015
- *      Author: aliaksandr
- */
+#ifndef Matrix_h
+#define Matrix_h
 
-#ifndef MATRIX_H_
-#define MATRIX_H_
+#include <iostream>
+#include <string.h>
 
+using namespace std;
 
-class Matrix {
+class Matrix{
 
+public:
+	Matrix(int m, int n);
+	Matrix(double ** matrix, int n, int m);
+	Matrix();
+	~Matrix();
+	Matrix(const Matrix& Matrix);
+
+	Matrix operator = (const Matrix& Matrix);
+	Matrix operator +(const Matrix& B);
+	Matrix operator -(const Matrix& B);
+	Matrix operator *(const Matrix& B);
+
+	double det();
+	double norm();
+	double getValue(int i, int j) const;
+	void setValue(int i, int j, double value);
+	int getRowCount();
+	int getColCount();
+	double ** getMatrix();
+	Matrix& invert();
+	Matrix& transpose();
+
+	int m;
+	int n;
+	double ** matrix;
+
+private:
+
+	double _det(double **A, int N);
 };
 
-
-#endif /* MATRIX_H_ */
+#endif
